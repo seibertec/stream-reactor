@@ -88,7 +88,7 @@ class JMSSourceTask extends SourceTask with StrictLogging {
         messages = collection.mutable.Seq(polled.map({ case (message, _) => message }).toSeq: _*)
       }
     } finally {
-      if (messages.size > 0) {
+      if (messages.nonEmpty) {
         ackMessage = messages.headOption
         val polledRecordsToCommit = records.zip(records).toMap.asJava
         recordsToCommit.putAll(polledRecordsToCommit)
@@ -99,6 +99,7 @@ class JMSSourceTask extends SourceTask with StrictLogging {
       progressCounter.update(records.toVector)
     }
 
+    logger.info(s"Records read ${records.size}")
     records
   }
 

@@ -40,15 +40,12 @@ class JMSReader(settings: JMSSettings) extends StrictLogging {
   val topicsMap: Map[String, String] = settings.settings.map(s => (s.source, s.target)).toMap
 
   def poll(): Map[Message, SourceRecord] = {
-
-    val messages = consumers
-                      .flatMap({ case (source, consumer)=>
-                        (0 to settings.batchSize)
-                          .flatMap(_ => Option(consumer.receiveNoWait()))
-                          .map(m => (m, convert(source, topicsMap(source), m)))
-                      })
-
-    messages
+    consumers
+      .flatMap { case (source, consumer) =>
+        (0 to settings.batchSize)
+          .flatMap(_ => Option(consumer.receiveNoWait()))
+          .map(m => (m, convert(source, topicsMap(source), m)))
+      }
   }
 
   def convert(source: String, target: String,  message: Message): SourceRecord = {
