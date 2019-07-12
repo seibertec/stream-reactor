@@ -37,7 +37,7 @@ abstract class RedisWriter extends DbWriter with StrictLogging with ConverterUti
     val connection = sinkSettings.connectionInfo
 
     if (connection.isSslConnection) {
-        val keyStoreFilepath = connection.keyStoreFilepath match {
+        connection.keyStoreFilepath match {
           case Some(path) =>
             if (!new File(path).exists) {
               throw new FileNotFoundException(s"Keystore Certificate not found in: $path")
@@ -65,7 +65,7 @@ abstract class RedisWriter extends DbWriter with StrictLogging with ConverterUti
     }
 
     jedis = new Jedis(connection.host, connection.port, connection.isSslConnection)
-    connection.password.foreach(p => jedis.auth(p))
+    connection.password.filterNot(p => p == "").foreach(p => jedis.auth(p))
     //initialize error tracker
     initialize(sinkSettings.taskRetries, sinkSettings.errorPolicy)
   }
